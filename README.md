@@ -1,7 +1,7 @@
 # TetSphere Splatting: Representing High-Quality Geometry with Lagrangian Volumetric Meshes
-This repository contains the implementation code for paper [TetSphere Splatting: Representing High-Quality Geometry with Lagrangian Volumetric Meshes](https://arxiv.org/pdf/2405.20283).
+This repository contains the implementation code for the paper [TetSphere Splatting: Representing High-Quality Geometry with Lagrangian Volumetric Meshes](https://arxiv.org/pdf/2405.20283).
 
-In this work, we introduce *TetSphere splatting*, an explicit, Lagrangian representation for reconstructing 3D shapes with high-quality geometry, which employs tetrahedral meshes as the geometric primitives. This approach directly yields superior mesh quality without relying on neural networks or post-processing. It deforms multiple initial tetrahedral spheres to accurately reconstruct the 3D shape through a combination of differentiable rendering and geometric energy optimization, resulting in significant computational efficiency.
+In this work, we introduce *TetSphere splatting*, an explicit, Lagrangian representation for reconstructing 3D shapes with high-quality geometry, which employs tetrahedral meshes as the geometric primitives. This approach directly yields superior mesh quality without relying on neural networks or post-processing. It deforms multiple initial tetrahedral spheres to accurately reconstruct the 3D shape by combining differentiable rendering and geometric energy optimization, resulting in significant computational efficiency.
 
 ![overview](assets/teaser.png)
 (a) Eulerian vs. Lagrangian geometry representations: DMTet employs a deformable tetrahedral grid, assigning signed distance values at vertices, whereas TetSphere splatting reconstructs 3D shapes by directly deforming tet-spheres, enhancing computational and memory efficiency. TetSphere splatting supports a range of applications, including (b) single-view 3D reconstruction from Google Scanned Objects dataset, (c) SDS-based image-to-3D generation, and (d) text-to-3D generation.
@@ -9,9 +9,9 @@ In this work, we introduce *TetSphere splatting*, an explicit, Lagrangian repres
 ## Installation
 
 ### Prerequisites
-- __CUDA:__ We use ``cuda-11.8`` for both PyTorch and TetSphere geometry energies. Please install the corresponding CUDA version on your machine following this [link](https://developer.nvidia.com/cuda-11-8-0-download-archive). The default install path is ``/usr/local/cuda-11.8/``. If you don't have ``sudo`` permission, you can install it in your custom directory by using ``runfile(local)`` installer (only install ToolKit w/o Driver, change ToolKit Install Path to custom directory, disable the symbolic link creation, desktop shortcuts, and manpage documents in ToolKit Options)  .
+- __CUDA:__ We use ``cuda-11.8`` for both PyTorch and TetSphere geometry energies. Please install the corresponding CUDA version on your machine following this [link](https://developer.nvidia.com/cuda-11-8-0-download-archive). The default install path is ``/usr/local/cuda-11.8/``. If you don't have ``sudo`` permission, you can install it in your custom directory by using the ``runfile(local)`` installer (only install ToolKit w/o Driver, change ToolKit Install Path to a custom directory, disable the symbolic link creation, desktop shortcuts, and manpage documents in ToolKit Options).
 
-- __TetWild:__ We use [TetWild](https://github.com/Yixin-Hu/TetWild) during the initialization of TetSpheres and merge the optimized TetSpheres into one shape. Clone from the following folked repository which offers the feature of turning generated tetmeshes into ``.npy`` and build it.
+- __TetWild:__ We use [TetWild](https://github.com/Yixin-Hu/TetWild) during the initialization of TetSpheres and merge the optimized TetSpheres into one shape. Clone from the following forked repository which offers the feature of turning generated tetmeshes into ``.npy`` and build it.
 ```bash
 git clone git@github.com:gmh14/TetWild.git
 cd TetWild
@@ -20,11 +20,11 @@ cmake ..
 make -j
 ```
 
-- __libpgo:__ Follow the instructions in the TODO [libpgo]() to install.
+- __libpgo:__ Follow the instructions in the [libpgo](https://github.com/bohanwang/libpgo) to install.
 
 
 ### Conda Environment
-We use ``conda`` to install the dependencies for *TetSphere splatting* .
+We use ``conda`` to install the dependencies for *TetSphere splatting*.
 ```bash
 git clone git@github.com:gmh14/tssplat.git
 cd tssplat
@@ -54,7 +54,7 @@ tet_spheres_ext imported successfully
 The input data for TetSphere splatting consists of multi-view RGBA images, optionally including depth/normal images and their corresponding camera poses. We provide example data folders in this [link](https://drive.google.com/file/d/1j0hRu7vtBG3gb1p3BS_88YyVf9K9lhPk/view?usp=sharing), including examples from multi-view images obtained from both [Wonder3D](https://github.com/xxlong0/Wonder3D) and image-to-3D generation ([DreamCraft3D](https://github.com/DSaurus/threestudio-dreamcraft3D)).
 Download the data from the link and unzip it into the ``img_data/`` folder. 
 
-To create your own data, use [Mitsuba3](https://github.com/mitsuba-renderer/mitsuba3) for rendering images from a 3D shape. Check the example script ``render_dataset.py`` under ``data/`` folder to understand the required format of input data, which should match the provided example data. The following steps render multi-view images for the GSO Mario model and save them to ``img_data/mario/`` (the paths are hard-coded in the Python file):
+To create your own data, use [Mitsuba3](https://github.com/mitsuba-renderer/mitsuba3) for rendering images from a 3D shape. Check the example script ``render_dataset.py`` under the ``data/`` folder to understand the required format of input data, which should match the provided example data. The following steps render multi-view images for the GSO Mario model and save them to ``img_data/mario/`` (the paths are hard-coded in the Python file):
 ```bash
 cd data
 python render_dataset.py
@@ -85,7 +85,7 @@ Other parameters:
 
 > Increase both ``surf_res`` and ``pc_res`` for higher resolution and more accurate initialization. However, this will increase the computational cost.
 
-> The implementation is slightly different from the paper, where we use ``scipy.milp`` following the official implementation of [Coverage Axis](https://github.com/Frank-ZY-Dou/Coverage_Axis). The original implementation for the paper is based on ``Gurobi`` and requires academic licenses for large-scale MILP optimization. In practice, we find that the current implementation performs similarly to the original one. 
+> The implementation is slightly different from the paper: here, we use ``scipy.milp`` following the official implementation of [Coverage Axis](https://github.com/Frank-ZY-Dou/Coverage_Axis). Our original implementation is based on ``Gurobi`` and requires academic licenses for large-scale MILP optimization, which cannot be acquired for non-academics. In practice, we find that the current implementation performs similarly to the original one. 
 
 ### Run TetSphere Splatting
 ```bash
@@ -131,4 +131,4 @@ If you find the idea or code useful for your research, please cite [our paper](h
 
 
 ## Contact
-Please contact guomh2014@gmail.com if you have any questions. Enjoy!
+Don't hesitate to contact guomh2014@gmail.com if you have any questions. Enjoy!
