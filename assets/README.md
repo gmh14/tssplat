@@ -1,9 +1,9 @@
 # Visualization Results using MeshLab
 ## Dog
-![Dog](dog.gif){ width="1000" align="center"}
+![Dog](dog.gif | width="1000")
 ## Cartoon Man
-![Cartoon man](cartoon_man.gif){ width="1000" align="center"}
+![Cartoon man](cartoon_man.gif | width="1000")
 ## Camel
-![Camel](camel.png){ width="1000" align="center"}
+![Camel](camel.png | width="1000")
 ## Horse
-![Horse](horse.png){ width="1000" align="center"}
+![Horse](horse.png | width="1000")
