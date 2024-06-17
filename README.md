@@ -51,7 +51,7 @@ tet_spheres_ext imported successfully
 ## Use TetSphere Splatting
 
 ### Data Preparation
-The input data for TetSphere splatting consists of multi-view RGBA images, optionally including depth/normal images and their corresponding camera poses. We provide example data folders in this [link](https://drive.google.com/file/d/1j0hRu7vtBG3gb1p3BS_88YyVf9K9lhPk/view?usp=sharing), including examples from multi-view images obtained from both [Wonder3D](https://github.com/xxlong0/Wonder3D) and image-to-3D generation ([DreamCraft3D](https://github.com/DSaurus/threestudio-dreamcraft3D)).
+The input data for TetSphere splatting consists of multi-view RGBA images (optionally including depth/normal images) and their corresponding camera poses. We provide example data folders in this [link](https://drive.google.com/file/d/1j0hRu7vtBG3gb1p3BS_88YyVf9K9lhPk/view?usp=sharing), including examples from multi-view images obtained from both [Wonder3D](https://github.com/xxlong0/Wonder3D) and image-to-3D generation ([DreamCraft3D](https://github.com/DSaurus/threestudio-dreamcraft3D)).
 Download the data from the link and unzip it into the ``img_data/`` folder. 
 
 To create your own data, use [Mitsuba3](https://github.com/mitsuba-renderer/mitsuba3) for rendering images from a 3D shape. Check the example script ``render_dataset.py`` under the ``data/`` folder to understand the required format of input data, which should match the provided example data. The following steps render multi-view images for the GSO Mario model and save them to ``img_data/mario/`` (the paths are hard-coded in the Python file):
