@@ -104,13 +104,13 @@ We provide Colab for visualizing the intermediate results of TetSphere splatting
 Visualizing the results locally using modeling tools like MeshLab or Blender is recommended to show better quality and details. Some results are shown in [here](https://github.com/gmh14/tssplat/tree/master/assets).
 
 ## WIP Features
-- [] Wonder3D examples
+- [ ] Wonder3D examples
 
-- [] Text-to-3D threestudio plugin
+- [ ] Text-to-3D threestudio plugin
 
-- [] Vanilla PyTorch version of TetSphere geometry energies
+- [ ] Vanilla PyTorch version of TetSphere geometry energies
 
-- [] HuggingFace Gradio app 
+- [ ] HuggingFace Gradio app 
 
 
 ## Acknowledgements
