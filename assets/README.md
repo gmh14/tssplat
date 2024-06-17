@@ -2,8 +2,8 @@
 ## Dog
  <img src=dog.gif width="1000">
 ## Cartoon Man
-![Cartoon man](cartoon_man.gif | width="1000")
+<img src=cartoon_man.gif width="1000">
 ## Camel
-![Camel](camel.png | width="1000")
+<img src=camel.png width="1000">
 ## Horse
-![Horse](horse.png | width="1000")
+<img src=horse.png width="1000">
