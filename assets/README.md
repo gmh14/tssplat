@@ -1,6 +1,6 @@
 # Visualization Results using MeshLab
 ## Dog
-![Dog](dog.gif | width="1000")
+ <img src=dog.gif width="1000">
 ## Cartoon Man
 ![Cartoon man](cartoon_man.gif | width="1000")
 ## Camel
