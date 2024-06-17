@@ -37,7 +37,7 @@ bash install.sh
 
 > The ``install.sh`` script contains the installation of multiple packages and libraries that are built from scratch. This is recommended for its robustness and ability to avoid package conflicts across all platforms we have tested. However, please note that installing all dependencies may require significant time.
 
-We use the custom CUDA extension of TetSphere splatting for geometry energies computation and optimization, as it is significantly faster in wall-clock speed compared to the vanilla PyTorch version.
+We use the custom CUDA extension of TetSphere splatting for geometry energy computation and optimization, as it is significantly faster in wall-clock speed compared to the vanilla PyTorch version.
 To use this extension, you need to install ``libpgo`` with the following additional steps:
 ```bash
 cd tssplat_ext
@@ -102,7 +102,7 @@ We only use RGBA images for the TetSphere splatting when dense view images are p
 ## Result Visualization
 We provide Colab for visualizing the intermediate results of TetSphere splatting, which can be found [here](https://colab.research.google.com/drive/1uMDDjNeweicOXXuVgH2xq6eMIC4Eo61U?usp=sharing).
 
-Visualizing the results locally using modeling tools like MeshLab or Blender is recommended to show better quality and details. Some results are shown in [here]().
+Visualizing the results locally using modeling tools like MeshLab or Blender is recommended to show better quality and details. Some results are shown in [here](https://github.com/gmh14/tssplat/tree/master/assets).
 
 ## WIP Features
 - [] Wonder3D examples
