@@ -20,9 +20,6 @@ cmake ..
 make -j
 ```
 
-- __libpgo:__ Follow the instructions in the [libpgo](https://github.com/bohanwang/libpgo) to install.
-
-
 ### Conda Environment
 We use ``conda`` to install the dependencies for *TetSphere splatting*.
 ```bash
@@ -38,7 +35,9 @@ bash install.sh
 > The ``install.sh`` script contains the installation of multiple packages and libraries that are built from scratch. This is recommended for its robustness and ability to avoid package conflicts across all platforms we have tested. However, please note that installing all dependencies may require significant time.
 
 We use the custom CUDA extension of TetSphere splatting for geometry energy computation and optimization, as it is significantly faster in wall-clock speed compared to the vanilla PyTorch version.
-To use this extension, you need to install ``libpgo`` with the following additional steps:
+To use this extension, we need [libpgo](https://github.com/bohanwang/libpgo), a C++ library with Python bindings for **P**hysically-based simulation, **G**eometric shape modeling, and **O**ptimization. Follow the instructions in the original [repo]((https://github.com/bohanwang/libpgo) to get ``libpgo`` installed inside the conda environment of ``tssplat`` we just created.
+
+With ``libpgo`` installed, the custom CUDA extension is built with the following additional steps:
 ```bash
 cd tssplat_ext
 bash install_ext.sh
