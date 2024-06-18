@@ -94,9 +94,9 @@ python trainer.py --config ./config/img_to_3D.yaml \
     expr_name=$expr_name \
     geometry.tetwild_exec=**/path/to/tetwild**
 ```
-Replace ``**/path/to/tetwild**`` with the path to the TetWild executable. The script will optimize the TetSpheres to reconstruct the 3D shape and save the results in the ``results/`` folder.
+Replace ``**/path/to/tetwild**`` with the path to the TetWild executable. The script will optimize the TetSpheres to reconstruct the 3D shape and save the intermediate and final results in the ``results/`` folder.
 
-We only use RGBA images for the TetSphere splatting when dense view images are provided (with ``expr_name`` in ``a_white_dog``, ``camel``, ``horse``, ``cartoon_man``, ``mario``). The script will save the intermediate results in the ``mesh_data/`` folder.
+We only use RGBA images for the TetSphere splatting when dense view images are provided (with ``expr_name`` in ``a_white_dog``, ``camel``, ``horse``, ``cartoon_man``, ``mario``).
 
 ## Result Visualization
 We provide Colab for visualizing the intermediate results of TetSphere splatting, which can be found [here](https://colab.research.google.com/drive/1uMDDjNeweicOXXuVgH2xq6eMIC4Eo61U?usp=sharing).
