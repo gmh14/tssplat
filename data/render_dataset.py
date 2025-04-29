@@ -2,11 +2,19 @@ import mitsuba as mi
 import numpy as np
 import math
 import os
+import glob
 import trimesh
 import sys
+import drjit as dr
+import json
+from scipy.spatial.transform import Rotation as R
+import argparse
 
 print(mi.variants())
+
 mi.set_variant("cuda_ad_rgb")
+# mi.set_variant("llvm_ad_rgb")
+# mi.set_variant("scalar_rgb")
 res = 512
 fov = 39.3077
 near = 0.001
@@ -52,7 +60,7 @@ def load_sensor(origin, target, up):
     v = look_at(origin, target, up)
     p = perspective()
 
-    v1 = mi.ScalarTransform4f.look_at(origin=origin, target=target, up=up)
+    v1 = mi.ScalarTransform4f().look_at(origin=origin, target=target, up=up)
 
     # print(v)
     # print(v1)
@@ -93,7 +101,9 @@ def sample_view(r, n_total):
     goldenRatio = (1 + 5**0.5) / 2
     i = np.arange(0, n_total)
     theta = 2 * math.pi * i / goldenRatio
+
     phi = np.arccos(1 - 2 * (i) / n_total)
+
     x, y, z = np.cos(theta) * np.sin(phi) * r, np.sin(theta) * \
         np.sin(phi) * r, np.cos(phi) * r
 
@@ -101,6 +111,7 @@ def sample_view(r, n_total):
     mvps = []
     mvs = []
     eyes = []
+    c2ws = []
     for fi in range(n_total):
         cx = x[fi]
         cy = y[fi]
@@ -132,46 +143,103 @@ def sample_view(r, n_total):
 
         sensors.append(sensor)
 
-    return sensors, mvps, mvs, eyes
+    return sensors, mvps, mvs, eyes, c2ws
 
 
 def render_mesh(base_path, filename, tex_filename, n_total):
     mesh_filename = os.path.join(base_path, filename)
-    tex_filename = os.path.join(base_path, tex_filename)
+    # tex_filename = os.path.join(base_path, tex_filename)
+    tex_filename = tex_filename
 
-    scene = mi.load_dict(
-        {
+    if tex_filename == None:
+        mesh = mi.load_dict({
+            "type": "obj",
+            "filename": mesh_filename,
+            "bsdf": {
+                "type": "diffuse",
+                "reflectance": {
+                    "type": "mesh_attribute",
+                    "name": "vertex_color",  # This will be used to visualize our attribute
+                },
+            },
+        })
+
+        # Needs to start with vertex_ or face_
+        attribute_size = mesh.vertex_count() * 3
+        mesh.add_attribute(
+            "vertex_color", 3, [0] * attribute_size
+        )  # Add 3 floats per vertex (initialized at 0)
+
+        mesh_params = mi.traverse(mesh)
+        N = mesh.vertex_count()
+
+        trimesh_obj = trimesh.load(mesh_filename)
+        vertex_colors_np = np.array(trimesh_obj.visual.vertex_colors)[
+            :, :3] / 255.0
+
+        vertex_colors = dr.zeros(mi.Float, 3 * N)
+        try:
+            dr.scatter(vertex_colors, vertex_colors_np.flatten(),
+                       np.arange(3 * N))
+        except:
+            vertex_colors = dr.ones(mi.Float, 3 * N)
+
+        mesh_params["vertex_color"] = vertex_colors
+        mesh_params.update()
+
+        scene = mi.load_dict({
             "type": "scene",
-            # The keys below correspond to object IDs and can be chosen arbitrarily
             "integrator": {
                 "type": "aov",
-                "aovs": "dd:depth,nn:sh_normal",
+                "aovs": "dd:depth,nn:geo_normal",
                 "color": {
                     "type": "path",
                     "hide_emitters": True,
                 },
             },
             "light": {"type": "constant"},
-            "teapot": {
-                "type": "obj",
-                "filename": mesh_filename, # "temp.obj",
-                "to_world": mi.ScalarTransform4f.scale([1, 1, 1]),
-                "bsdf": {
-                    "type": "diffuse",
-                    "reflectance": {
-                        "type": "bitmap",
-                        "filename": tex_filename,
+            "wavydisk": mesh,
+        })
+
+    else:
+        scene = mi.load_dict(
+            {
+                "type": "scene",
+                # The keys below correspond to object IDs and can be chosen arbitrarily
+                "integrator": {
+                    "type": "aov",
+                    "aovs": "dd:depth,nn:geo_normal",
+                    "color": {
+                        "type": "path",
+                        "hide_emitters": True,
                     },
                 },
-            },
-        }
-    )
+                "light": {"type": "constant"},
+                "teapot": {
+                    "type": "obj",
+                    "filename": mesh_filename,  # "temp.obj",
+                    "to_world": mi.ScalarTransform4f().scale([1, 1, 1]),
+                    "bsdf": {
+                        "type": "diffuse",
+                        "reflectance": {
+                            "type": "bitmap",
+                            "filename": tex_filename,
+                            # "type": "mesh_attribute",
+                            # "name": "vertex_color"
+                        },
+                    },
+                },
+
+
+            }
+        )
 
     (
         sensors,
         mvps,
         mvs,
         eyes,
+        c2ws,
     ) = sample_view(4, n_total)
     images = []
 
@@ -190,40 +258,14 @@ def render_mesh(base_path, filename, tex_filename, n_total):
 
     print()
 
-    return images, mvps, mvs, eyes
+    return images, mvps, mvs, eyes, c2ws
 
-def main(base_folder, mesh, texture, target_folder_dense, f):
-    # normalize fish
-    mesh_data = trimesh.load(os.path.join(base_folder, mesh))
-    if isinstance(mesh_data, trimesh.Scene):
-        if len(mesh_data.geometry) == 0:
-            mesh_data = None  # empty scene
-        else:
-            # we lose texture information here
-            mesh_data = trimesh.util.concatenate(
-                tuple(trimesh.Trimesh(vertices=g.vertices, faces=g.faces)
-                    for g in mesh_data.geometry.values()))
-    else:
-        assert(isinstance(mesh_data, trimesh.Trimesh))
-        
-    v_center = np.mean(mesh_data.vertices, axis=0)
-    mesh_data.vertices -= v_center
 
-    v_min = np.min(mesh_data.vertices, axis=0)
-    v_max = np.max(mesh_data.vertices, axis=0)
+def main(base_folder, mesh, texture, output_path, output_folder, num_views=120):
+    images, mvps, mvs, eyes, c2ws = render_mesh(
+        base_folder, mesh, texture, num_views)
 
-    v_center = (v_max + v_min) * 0.5
-    bb_size = np.max(v_max - v_center)
-    scale = 1.0 / bb_size
-
-    mesh_data.vertices = (mesh_data.vertices - v_center) * scale # + v_center
-    mesh_data.export(os.path.join(base_folder, "{}_normalized.obj".format(os.path.basename(mesh).split(".")[0])))
-
-    # use PyMeshLab
-    images, mvps, mvs, eyes = render_mesh(
-        base_folder, "{}_normalized.obj".format(os.path.basename(mesh).split(".")[0]), texture, 120)
-
-    os.makedirs(os.path.join(target_folder_dense, f), exist_ok=True)
+    os.makedirs(os.path.join(output_path, output_folder), exist_ok=True)
     for i, img in enumerate(images):
         # img = img ** (1.0 / 2.2)
         # img = mi.Bitmap(img, mi.Bitmap.PixelFormat.RGBA)
@@ -233,35 +275,42 @@ def main(base_folder, mesh, texture, target_folder_dense, f):
                     pixel_format=mi.Bitmap.PixelFormat.RGBA, component_format=mi.Struct.Type.UInt8, srgb_gamma=True
                 )
                 color.write(os.path.join(
-                    target_folder_dense, f, f"img_rgba_{i}.png"))
+                    output_path, output_folder, f"img_rgba_{i}.png"))
             elif name == "dd":
                 mp_np = np.array(pic)
-                np.save(os.path.join(target_folder_dense,
-                        f, f"depth_{i}.npy"), mp_np)
+                np.save(os.path.join(output_path,
+                        output_folder, f"depth_{i}.npy"), mp_np)
             elif name == "nn":
                 color = pic.convert(
                     pixel_format=mi.Bitmap.PixelFormat.RGBA, component_format=mi.Struct.Type.UInt16, srgb_gamma=False
                 )
-                color.write(os.path.join(target_folder_dense,
-                            f, f"normal_rgba_{i}.png"))
+                color.write(os.path.join(output_path,
+                            output_folder, f"normal_rgba_{i}.png"))
 
                 mp_np = np.array(pic)
-                np.save(os.path.join(target_folder_dense,
-                        f, f"normal_{i}.npy"), mp_np)
+                np.save(os.path.join(output_path,
+                        output_folder, f"normal_{i}.npy"), mp_np)
 
         # Write image to JPEG file
 
-        np.save(os.path.join(target_folder_dense,
-                f, f"mvp_mtx_{i}.npy"), mvps[i])
-        np.save(os.path.join(target_folder_dense,
-                f, f"mv_{i}.npy"), mvs[i])
+        np.save(os.path.join(output_path,
+                output_folder, f"mvp_mtx_{i}.npy"), mvps[i])
+        np.save(os.path.join(output_path,
+                output_folder, f"mv_{i}.npy"), mvs[i])
 
 
 if __name__ == "__main__":
-    base_folder = "../mesh_data/mario_example"
-    mesh = "model.obj"
-    texture = "texture.png"
-    target_folder_dense = "../img_data/"
-    folder = "mario"
-    main(base_folder, mesh, texture, target_folder_dense, folder)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--base_folder", default="./mesh_data")
+    parser.add_argument("--mesh_name", default="sorter.obj")
+    parser.add_argument("--output_path", default="./img_data")
+    parser.add_argument("--num_views", type=int, default=120)
+    args = parser.parse_args()
+
+    texture = "../mesh_data/mario_example/texture.png"
+    output_folder = args.mesh_name.split(".")[0]
+
+    main(args.base_folder, args.mesh_name, texture,
+            args.output_path, output_folder, args.num_views)
     
